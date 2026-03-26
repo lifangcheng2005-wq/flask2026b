@@ -9,7 +9,7 @@ def index():
     link += "<a href=/today>現在日期時間</a><hr>"
     link += "<a href=/me>關於我</a><hr>"
     link += "<a href=/welcome?u=莉芳&d=靜宜資管>Get傳值</a><hr>"
-    link += "<a href=/account>網頁表單傳值</a><br>"
+    link += "<a href=/account>傳值</a><br>"
     return link
 
 @app.route("/mis")
