@@ -30,15 +30,15 @@ def index():
     link += "<a href='/welcome?u=莉芳&d=靜宜資管'>Get傳值</a><hr>"
     link += "<a href='/account'>POST傳值</a><hr>"
     link += "<a href='/math'>次方與根號</a><hr>"
-    link += "<a href='=/read'>讀取Firestore資料</a><hr>"
+    link += "<a href=/read>讀取Firestore資料</a><br>"
     return link
 
 @app.route("/read")
 def read():
     Result = ""
     db = firestore.client()
-    collection_ref = db.collection("靜宜資管")    
-    docs = collection_ref.get()    
+    collection_ref = db.collection("chengMIS")    
+    docs = collection_ref.order_by("lab",direction=firestore.Query.DESCENDING).get()    
     for doc in docs:         
         Result += "文件內容：{}".format(doc.to_dict()) + "<br>"    
     return Result
