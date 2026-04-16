@@ -1,3 +1,6 @@
+import requests
+from bs4 import BeautifulSoup
+
 from flask import Flask, render_template, request
 from datetime import datetime
 
@@ -30,7 +33,9 @@ def index():
     link += "<a href='/welcome?u=莉芳&d=靜宜資管'>Get傳值</a><hr>"
     link += "<a href='/account'>POST傳值</a><hr>"
     link += "<a href='/math'>次方與根號</a><hr>"
-    link += "<a href=/read>讀取Firestore資料</a><br>"
+    link += "<a href=/read>讀取Firestore資料</a><hr>"
+    link += "<a href=/teacher>靜宜資管老師查詢</a><hr>"
+    link += "<a href=/spider>爬取子青老師本學期課程</a><br>"
     return link
 
 @app.route("/read")
@@ -42,6 +47,57 @@ def read():
     for doc in docs:         
         Result += "文件內容：{}".format(doc.to_dict()) + "<br>"    
     return Result
+
+@app.route("/spider")
+def spider():
+    R = ""
+    url = "https://www1.pu.edu.tw/~tcyang/course.html"
+    Data = requests.get(url)
+    Data.encoding = "utf-8"
+    sp = BeautifulSoup(Data.text, "html.parser")
+    result=sp.select(".team-box a")
+
+    for i in result:
+        R += i.text + i.get("href") + "<br>"
+    return R
+
+@app.route("/teacher")
+def teacher():
+    keyword = request.args.get("keyword")
+    
+    form_html = """
+        <form action="/teacher" method="GET">
+            <h3>靜宜資管老師查詢</h3>
+            請輸入老師姓名關鍵字：
+            <input type="text" name="keyword" placeholder="例如：陳">
+            <button type="submit">查詢</button>
+        </form>
+        <hr>
+    """
+    
+    db = firestore.client()
+    collection_ref = db.collection("chengMIS")
+    
+    result_text = ""
+    if keyword:
+        docs = collection_ref.get()
+        found = False
+        result_text += f"<h4>查詢結果 (關鍵字: {keyword})：</h4>"
+        
+        for doc in docs:
+            teacher_data = doc.to_dict()
+            name = teacher_data.get("name", "")
+            if keyword in name:
+                found = True
+                result_text += f"<span style='color:blue'><b>{name}</b></span> 老師的研究室在 <b>{teacher_data.get('lab')}</b><br>"
+        
+        if not found:
+            result_text = f"<h4>查詢結果：</h4> 抱歉，找不到姓名包含「{keyword}」的老師。"
+    else:
+        result_text = "<i>請輸入關鍵字進行查詢</i>"
+
+    back_link = '<br><br><a href="/">返回首頁</a>'
+    return form_html + result_text + back_link
 
 
 @app.route("/mis")
