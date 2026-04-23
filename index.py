@@ -35,8 +35,64 @@ def index():
     link += "<a href='/math'>次方與根號</a><hr>"
     link += "<a href=/read>讀取Firestore資料</a><hr>"
     link += "<a href=/teacher>靜宜資管老師查詢</a><hr>"
-    link += "<a href=/spider>爬取子青老師本學期課程</a><br>"
+    link += "<a href=/spider>爬取子青老師本學期課程</a><hr>"
+    link += "<a href=/movie1>爬取即將上映電影</a><hr>"
+    link += "<a href=/movie2>輸入片名關鍵字查詢電影</a><br>"
     return link
+
+
+@app.route("/movie1")
+def movie1():
+    R = ""
+    url = "https://www.atmovies.com.tw/movie/next/"
+    Data = requests.get(url)
+    Data.encoding = "utf-8"
+    #print(Data.text)
+    sp = BeautifulSoup(Data.text, "html.parser")
+    result=sp.select(".filmListAllX li")
+    for item in result:
+        introduce = "https://www.atmovies.com.tw" + item.find("a").get("href")
+        R += "<a href=" + introduce + ">" + item.find("img").get("alt") + "</a><br>"
+        R += "https://www.atmovies.com.tw" + item.find("img").get("src") + "<br><br>"
+    return R
+
+@app.route("/movie2", methods=["GET"])
+def movie2():
+    keyword = request.args.get("q")
+    
+    # 建立查詢表單
+    R = """
+        <form action="/movie2" method="GET">
+            <h3>電影關鍵字查詢</h3>
+            <input type="text" name="q" placeholder="請輸入片名關鍵字">
+            <button type="submit">查詢</button>
+        </form>
+        <hr>
+    """
+    
+    if keyword:
+        url = "https://www.atmovies.com.tw/movie/next/"
+        Data = requests.get(url)
+        Data.encoding = "utf-8"
+        sp = BeautifulSoup(Data.text, "html.parser")
+        result = sp.select(".filmListAllX li")
+        
+        found = False
+        for item in result:
+            title = item.find("img").get("alt")
+            if keyword in title:
+                found = True
+                link = "https://www.atmovies.com.tw" + item.find("a").get("href")
+                img_src = "https://www.atmovies.com.tw" + item.find("img").get("src")
+                R += f"<b>{title}</b><br>"
+                R += f"<a href='{link}'>查看詳情</a><br>"
+                R += f"<img src='{img_src}' width='150'><br><br>"
+        
+        if not found:
+            R += f"找不到包含「{keyword}」的電影。"
+    
+    R += "<br><a href='/'>返回首頁</a>"
+    return R
 
 @app.route("/read")
 def read():
