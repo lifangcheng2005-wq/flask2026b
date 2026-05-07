@@ -39,9 +39,63 @@ def index():
     link += "<a href=/movie1>爬取即將上映電影</a><hr>"
     link += "<a href=/movie2>輸入片名關鍵字查詢電影</a><hr>"
     link += "<a href=/spiderMovie>爬取即將上映電影到資料庫</a><hr>"
-    link += "<a href='/searchMovie'>資料庫電影查詢關鍵字</a><br>"
+    link += "<a href='/searchMovie'>資料庫電影查詢關鍵字</a><hr>"
+    link += "<a href='/road'>台中市十大肇事路口</a><hr>"
+    link += "<a href='/weather'>查詢縣市目前天氣及降雨機率</a><br>"
     return link
 
+
+@app.route("/weather")
+def weather():
+    # 1. 建立輸入框介面
+    R = '<form>請輸入縣市：<input name="city"><button>查詢</button></form><hr>'
+    
+    # 2. 取得使用者輸入的縣市 (如果沒有輸入就停止)
+    city = request.args.get("city")
+    if not city:
+        return R + "請輸入縣市名稱（例如：臺中市）<br>"
+
+    # 3. 處理名稱與抓取資料
+    city = city.replace("台", "臺")
+    url = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=rdec-key-123-45678-011121314&locationName={city}"
+    
+    try:
+        Data = requests.get(url)
+        JsonData = json.loads(Data.text)
+        
+        # 4. 解析資料並存入 R
+        location = JsonData["records"]["location"][0]
+        weather_state = location["weatherElement"][0]["time"][0]["parameter"]["parameterName"]
+        rain_chance = location["weatherElement"][1]["time"][0]["parameter"]["parameterName"]
+        
+        # 累加結果到 R
+        R += f"<h3>{city} 最新預報</h3>"
+        R += f"目前天氣：{weather_state}<br>"
+        R += f"降雨機率：{rain_chance}%"
+        
+    except:
+        R += "查詢失敗，請輸入完整的縣市名稱（如：彰化縣）。"
+    R += "<br><a href='/'>返回首頁</a>"
+
+    return R
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+@app.route("/road")
+def road():
+    R = "<h1>台中市十大肇事路口(113年10月)作者：程莉芳</h1><br>"
+    
+    url = "https://newdatacenter.taichung.gov.tw/api/v1/no-auth/resource.download?rid=a1b899c0-511f-4e3d-b22b-814982a97e41"
+    Data = requests.get(url)
+    JsonData = json.loads(Data.text)
+    for item in JsonData:
+        R += item["路口名稱"] + ",原因：" + item["主要肇因"] + ",件數：" + item["總件數"] + "<br>"
+
+        R += "<br><a href='/'>返回首頁</a>"
+
+    return R
 
 @app.route("/searchMovie", methods=["GET"])
 def searchMovie():
