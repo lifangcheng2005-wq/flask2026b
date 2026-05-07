@@ -93,7 +93,6 @@ def road():
     for item in JsonData:
         R += item["路口名稱"] + ",原因：" + item["主要肇因"] + ",件數：" + item["總件數"] + "<br>"
 
-        R += "<br><a href='/'>返回首頁</a>"
 
     return R
 
