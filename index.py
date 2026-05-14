@@ -57,29 +57,26 @@ def webhook():
     #info = "我是程莉芳設計的機器人,動作：" + action + "； 查詢內容：" + msg
 
     if (action == "rateChoice"):
-        rate = req["queryResult"]["parameters"]["rate"]
-        info = "我是程莉芳開發的電影聊天機器人，您選擇的電影分級是：" + rate + "，相關電影：\n"
+        rate =  req["queryResult"]["parameters"]["rate"]
+        #info = "我是程莉芳設計的機器人,您選擇的電影分級是：" + rate
+        info = "我是程莉芳開發的電影聊天機器人,您選擇的電影分級是：" + rate + "，相關電影：\n"
 
         db = firestore.client()
-        # 建議直接在查詢時過濾，減少流量消耗
         collection_ref = db.collection("電影含分級")
-        # 假設資料庫欄位名稱為 "rate"
-        docs = collection_ref.where("rate", "==", rate).get() 
-        
+        docs = collection_ref.get()
         result = ""
         for doc in docs:
-            movie_data = doc.to_dict()
-            # 確保欄位存在，避免報錯
-            title = movie_data.get("title", "未知片名")
-            link = movie_data.get("hyperlink", "無介紹連結")
-            result += "片名：" + title + "\n"
-            result += "介紹：" + link + "\n\n"
+            dict = doc.to_dict()
+            if rate in dict["rate"]:
+                result += "片名：" + dict["title"] + "\n"
+                result += "介紹：" + dict["hyperlink"] + "\n\n"
 
         if not result:
-            # 針對截圖 image_bf89b6.png 中「找不到電影」的情況提供回饋
-            result = "抱歉，目前資料庫中找不到該分級的電影。"
+            result = "抱歉，找不到該分級的電影。"
 
         info += result
+
+    return make_response(jsonify({"fulfillmentText": info}))
 
 
 @app.route("/rate")
