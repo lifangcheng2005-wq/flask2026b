@@ -61,17 +61,17 @@ def webhook():
         #info = "我是程莉芳設計的機器人,您選擇的電影分級是：" + rate
         info = "我是程莉芳開發的電影聊天機器人,您選擇的電影分級是：" + rate + "，相關電影：\n"
 
-    db = firestore.client()
-    collection_ref = db.collection("電影含分級")
-    docs = collection_ref.get()
-    result = ""
-    for doc in docs:
-        dict = doc.to_dict()
-        if rate in dict["rate"]:
-            result += "片名：" + dict["title"] + "\n"
-            result += "介紹：" + dict["hyperlink"] + "\n\n"
+        db = firestore.client()
+        collection_ref = db.collection("電影含分級")
+        docs = collection_ref.get()
+        result = ""
+        for doc in docs:
+            dict = doc.to_dict()
+            if rate in dict["rate"]:
+                result += "片名：" + dict["title"] + "\n"
+                result += "介紹：" + dict["hyperlink"] + "\n\n"
 
-    if not result:
+        if not result:
             result = "抱歉，找不到該分級的電影。"
 
         info += result
