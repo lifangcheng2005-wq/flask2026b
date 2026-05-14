@@ -26,7 +26,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    link = "<h1>歡迎進入程莉芳的網站20260409</h1>"
+    link = "<h1>歡迎進入程莉芳的網站20260514</h1>"
     link += "<a href='/mis'>課程</a><hr>"
     link += "<a href='/today'>現在日期時間</a><hr>"
     link += "<a href='/me'>關於我</a><hr>"
@@ -52,6 +52,7 @@ def webhook():
     req = request.get_json(force=True)
     # fetch queryResult from json
     action =  req["queryResult"]["action"]
+    info = ""
     #msg =  req["queryResult"]["queryText"]
     #info = "我是程莉芳設計的機器人,動作：" + action + "； 查詢內容：" + msg
 
@@ -72,7 +73,7 @@ def webhook():
 
     if not result:
             result = "抱歉，找不到該分級的電影。"
-            
+
         info += result
 
     return make_response(jsonify({"fulfillmentText": info}))
